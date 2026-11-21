@@ -10,7 +10,6 @@ import {
   useMap,
   useMapsLibrary,
 } from '@vis.gl/react-google-maps';
-import {motion} from 'motion/react';
 import {Clock, ExternalLink, MapPin, Navigation} from 'lucide-react';
 import {useCallback, useEffect, useState} from 'react';
 import {
@@ -18,6 +17,10 @@ import {
   NEARBY_ATTRACTIONS,
   NearbyAttraction,
 } from '../data/hotelData';
+import {LuxuryDivider} from './LuxuryDivider';
+import {RevealDelayStep, ScrollReveal} from './ScrollReveal';
+import {TiltCard} from './TiltCard';
+import {useLanguage} from '../i18n/LanguageContext';
 
 interface ResolvedPlace {
   name: string;
@@ -180,7 +183,7 @@ function HotelMapCanvas({selectedAttraction}: MapInnerProps) {
           href={HOTEL_INFO.directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex min-h-[44px] items-center gap-2 bg-[#D4AF37] px-5 py-2.5 text-xs font-semibold text-[#040812] hover:bg-[#E6CB7A]"
+          className="luxury-btn-primary mt-6 inline-flex min-h-[44px] items-center gap-2 bg-[#D4AF37] px-5 py-2.5 text-xs font-semibold text-[#040812] hover:bg-[#E6CB7A]"
         >
           <span>Open in Google Maps</span>
           <ExternalLink className="h-4 w-4" />
@@ -271,6 +274,7 @@ function HotelMapCanvas({selectedAttraction}: MapInnerProps) {
 }
 
 export function AttractionsAndMap() {
+  const {t} = useLanguage();
   const [selectedAttraction, setSelectedAttraction] =
     useState<NearbyAttraction | null>(null);
 
@@ -278,10 +282,9 @@ export function AttractionsAndMap() {
 
   const focusOnMap = useCallback((attraction: NearbyAttraction) => {
     setSelectedAttraction(attraction);
-    const locSection = document.getElementById('location');
-    if (locSection) {
-      locSection.scrollIntoView({behavior: 'smooth'});
-    }
+    window.dispatchEvent(
+      new CustomEvent('crystal-section-navigate', {detail: {id: 'location'}}),
+    );
   }, []);
 
   const flagshipAttractions = NEARBY_ATTRACTIONS.slice(0, 2);
@@ -292,183 +295,214 @@ export function AttractionsAndMap() {
       {/* NEARBY ATTRACTIONS SECTION — Midnight Blue */}
       <section
         id="attractions"
-        className="bg-[#081226] py-20 text-[#F7F3EB] sm:py-28"
+        className="overflow-x-clip bg-[#081226] py-20 text-[#F7F3EB] sm:py-28"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
+          <ScrollReveal variant="fade-up" duration={650} className="max-w-2xl">
             <p className="text-xs font-medium tracking-[0.2em] text-[#D4AF37] uppercase">
-              Gandhinagar Landmarks
+              {t.attractions.eyebrow}
             </p>
             <h2 className="mt-3 font-serif text-3xl font-medium text-[#F7F3EB] sm:text-4xl lg:text-5xl [text-wrap:balance]">
-              Heritage, Nature &amp; Civic Landmarks Nearby
+              {t.attractions.headline}
             </h2>
             <p className="mt-4 text-base leading-relaxed text-[#E6DFD1]/80">
-              Sector 11 places you at the crossroads of Gandhinagar’s monumental
-              temples, green riverfront parks, and Gujarat’s premier business
-              corridors.
+              {t.attractions.subheadline}
             </p>
-          </div>
+          </ScrollReveal>
 
           {/* Flagship 2-Column Landmark Spotlight */}
           <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
-            {flagshipAttractions.map((item, idx) => (
-              <motion.article
-                key={item.id}
-                initial={{opacity: 0, y: 20}}
-                whileInView={{opacity: 1, y: 0}}
-                viewport={{once: true, margin: '-60px'}}
-                transition={{
-                  duration: 0.5,
-                  delay: idx * 0.08,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="flex flex-col justify-between border border-[#D4AF37]/25 bg-[#060E1E] p-7 sm:p-9"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D4AF37]/15 pb-4">
-                    <span className="text-xs font-medium tracking-wider text-[#E6CB7A] uppercase">
-                      {item.category}
-                    </span>
-                    <span className="text-xs text-[#E6DFD1]/75 tabular-nums">
-                      {item.distance} · {item.driveTime}
-                    </span>
-                  </div>
-                  <h3 className="mt-5 font-serif text-2xl font-medium text-[#F7F3EB] sm:text-3xl">
-                    {item.index}. {item.name}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-[#E6DFD1]/80">
-                    {item.description}
-                  </p>
-                </div>
-                <div className="mt-7 border-t border-[#D4AF37]/15 pt-5">
-                  <button
-                    type="button"
-                    onClick={() => focusOnMap(item)}
-                    className="inline-flex min-h-[40px] items-center gap-2 text-xs font-semibold tracking-wide text-[#E6CB7A] transition-colors hover:text-[#F7F3EB] cursor-pointer"
-                  >
-                    <Navigation className="h-3.5 w-3.5" />
-                    <span>Locate on Interactive Map</span>
-                  </button>
-                </div>
-              </motion.article>
-            ))}
+            {flagshipAttractions.map((item, idx) => {
+              const attrCopy = t.attractions.items[item.id];
+              return (
+                <ScrollReveal
+                  key={item.id}
+                  variant={idx === 0 ? 'fade-right' : 'fade-left'}
+                  duration={750}
+                  delayStep={idx as RevealDelayStep}
+                  className="flex"
+                >
+                  <TiltCard maxTiltDeg={4.5} className="flex w-full">
+                    <article className="luxury-card-dark flex w-full flex-col justify-between border border-[#D4AF37]/25 bg-[#060E1E] p-7 sm:p-9">
+                      <div>
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D4AF37]/15 pb-4">
+                          <span className="text-xs font-medium tracking-wider text-[#E6CB7A] uppercase">
+                            {attrCopy?.category || item.category}
+                          </span>
+                          <span className="text-xs text-[#E6DFD1]/75 tabular-nums">
+                            {attrCopy?.distance || item.distance} ·{' '}
+                            {attrCopy?.driveTime || item.driveTime}
+                          </span>
+                        </div>
+                        <h3 className="mt-5 font-serif text-2xl font-medium text-[#F7F3EB] sm:text-3xl">
+                          {item.index}. {attrCopy?.name || item.name}
+                        </h3>
+                        <p className="mt-3 text-sm leading-relaxed text-[#E6DFD1]/80">
+                          {attrCopy?.description || item.description}
+                        </p>
+                      </div>
+                      <div className="mt-7 border-t border-[#D4AF37]/15 pt-5">
+                        <button
+                          type="button"
+                          onClick={() => focusOnMap(item)}
+                          className="luxury-btn-ghost inline-flex min-h-[40px] items-center gap-2 border border-transparent px-3 py-1.5 text-xs font-semibold tracking-wide text-[#E6CB7A] transition-colors hover:text-[#F7F3EB] cursor-pointer"
+                        >
+                          <Navigation className="h-3.5 w-3.5" />
+                          <span>{t.attractions.locateOnMap}</span>
+                        </button>
+                      </div>
+                    </article>
+                  </TiltCard>
+                </ScrollReveal>
+              );
+            })}
           </div>
 
           {/* Editorial Numbered Directory for Civic & Natural Landmarks */}
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-            {directoryAttractions.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start justify-between gap-4 border border-[#D4AF37]/15 bg-[#060E1E]/80 p-5 transition-colors hover:border-[#D4AF37]/45"
-              >
-                <div>
-                  <div className="flex items-center gap-2 text-xs text-[#E6CB7A] tabular-nums">
-                    <span>{item.category}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{item.distance}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{item.driveTime}</span>
-                  </div>
-                  <h3 className="mt-1.5 font-serif text-xl font-medium text-[#F7F3EB]">
-                    {item.index}. {item.name}
-                  </h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-[#E6DFD1]/75">
-                    {item.description}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => focusOnMap(item)}
-                  aria-label={`Show ${item.name} on map`}
-                  className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center border border-[#D4AF37]/30 text-[#E6CB7A] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#040812] cursor-pointer"
+            {directoryAttractions.map((item, idx) => {
+              const attrCopy = t.attractions.items[item.id];
+              return (
+                <ScrollReveal
+                  key={item.id}
+                  variant="fade-up"
+                  duration={650}
+                  delayStep={(idx % 4) as RevealDelayStep}
+                  className="flex"
                 >
-                  <MapPin className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
+                  <div className="luxury-card-dark flex w-full items-start justify-between gap-4 border border-[#D4AF37]/15 bg-[#060E1E]/80 p-5">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-[#E6CB7A] tabular-nums">
+                        <span>{attrCopy?.category || item.category}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{attrCopy?.distance || item.distance}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{attrCopy?.driveTime || item.driveTime}</span>
+                      </div>
+                      <h3 className="mt-1.5 font-serif text-xl font-medium text-[#F7F3EB]">
+                        {item.index}. {attrCopy?.name || item.name}
+                      </h3>
+                      <p className="mt-1.5 text-xs leading-relaxed text-[#E6DFD1]/75">
+                        {attrCopy?.description || item.description}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => focusOnMap(item)}
+                      aria-label={`${t.attractions.showOnMapPrefix} ${attrCopy?.name || item.name}`}
+                      className="luxury-btn-outline mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center border border-[#D4AF37]/30 text-[#E6CB7A] transition-colors hover:border-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#040812] cursor-pointer"
+                    >
+                      <MapPin className="h-4 w-4" />
+                    </button>
+                  </div>
+                </ScrollReveal>
+              );
+            })}
           </div>
         </div>
       </section>
 
+      <LuxuryDivider variant="section" from="navy" to="ivory" />
+
       {/* LOCATION & GOOGLE MAPS SECTION — Warm Ivory */}
       <section
         id="location"
-        className="bg-[#F7F3EB] py-20 text-[#0A1428] sm:py-28"
+        className="overflow-x-clip bg-[#F7F3EB] py-20 text-[#0A1428] sm:py-28"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 items-stretch gap-10 lg:grid-cols-12">
             {/* Left: Address & Arrival Brief */}
-            <div className="flex flex-col justify-between border border-[#0A1428]/12 bg-white p-7 sm:p-9 lg:col-span-5">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.2em] text-[#8E6F1E] uppercase">
-                  Location &amp; Arrival
-                </p>
-                <h2 className="mt-3 font-serif text-3xl font-medium text-[#060E1E] sm:text-4xl [text-wrap:balance]">
-                  Meghmalhar Complex, Sector 11
-                </h2>
-                <p className="mt-4 text-sm leading-relaxed text-[#2C3547]">
-                  Centrally positioned in Gandhinagar’s prime civic sector with
-                  lift access directly to the third floor and dedicated guest
-                  parking on arrival.
-                </p>
+            <ScrollReveal
+              variant="fade-right"
+              duration={750}
+              className="flex lg:col-span-5"
+            >
+              <div className="flex w-full flex-col justify-between border border-[#0A1428]/12 bg-white p-7 sm:p-9">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.2em] text-[#8E6F1E] uppercase">
+                    {t.location.eyebrow}
+                  </p>
+                  <h2 className="mt-3 font-serif text-3xl font-medium text-[#060E1E] sm:text-4xl [text-wrap:balance]">
+                    {t.location.headline}
+                  </h2>
+                  <p className="mt-4 text-sm leading-relaxed text-[#2C3547]">
+                    {t.location.subheadline}
+                  </p>
 
-                <dl className="mt-8 space-y-5 border-t border-[#0A1428]/12 pt-6 text-sm">
-                  <div>
-                    <dt className="text-xs font-semibold tracking-wider text-[#8E6F1E] uppercase">
-                      Full Address
-                    </dt>
-                    <dd className="mt-1 font-medium text-[#060E1E]">
-                      {HOTEL_INFO.name}, {HOTEL_INFO.addressLine1},{' '}
-                      {HOTEL_INFO.addressLine2}
-                    </dd>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <LuxuryDivider
+                    variant="inline"
+                    theme="light"
+                    align="left"
+                    className="mt-7 mb-6"
+                  />
+                  <dl className="space-y-5 text-sm">
                     <div>
-                      <dt className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#8E6F1E] uppercase">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>Check-In</span>
+                      <dt className="text-xs font-semibold tracking-wider text-[#8E6F1E] uppercase">
+                        {t.location.fullAddressLabel}
                       </dt>
-                      <dd className="mt-1 font-serif text-xl font-semibold text-[#060E1E] tabular-nums">
-                        {HOTEL_INFO.checkIn}
+                      <dd className="mt-1 font-medium text-[#060E1E]">
+                        {t.location.fullAddressValue}
                       </dd>
                     </div>
-                    <div>
-                      <dt className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#8E6F1E] uppercase">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>Check-Out</span>
-                      </dt>
-                      <dd className="mt-1 font-serif text-xl font-semibold text-[#060E1E] tabular-nums">
-                        {HOTEL_INFO.checkOut}
-                      </dd>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <dt className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#8E6F1E] uppercase">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{t.location.checkInLabel}</span>
+                        </dt>
+                        <dd className="mt-1 font-serif text-xl font-semibold text-[#060E1E] tabular-nums">
+                          {HOTEL_INFO.checkIn}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#8E6F1E] uppercase">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{t.location.checkOutLabel}</span>
+                        </dt>
+                        <dd className="mt-1 font-serif text-xl font-semibold text-[#060E1E] tabular-nums">
+                          {HOTEL_INFO.checkOut}
+                        </dd>
+                      </div>
                     </div>
-                  </div>
-                </dl>
-              </div>
+                  </dl>
+                </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-[#0A1428]/12 pt-6">
-                <a
-                  href={HOTEL_INFO.directionsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center gap-2 bg-[#060E1E] px-5 py-2.5 text-xs font-semibold tracking-wide text-[#F7F3EB] whitespace-nowrap transition-colors hover:bg-[#102040]"
-                >
-                  <span>Open in Google Maps</span>
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-                {selectedAttraction && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedAttraction(null)}
-                    className="min-h-[44px] border border-[#0A1428]/25 px-4 py-2 text-xs font-medium text-[#060E1E] hover:border-[#060E1E] cursor-pointer"
+                <LuxuryDivider
+                  variant="inline"
+                  theme="light"
+                  align="left"
+                  className="mt-7 mb-6"
+                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href={HOTEL_INFO.directionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="luxury-btn-ivory inline-flex min-h-[44px] items-center gap-2 border border-transparent bg-[#060E1E] px-5 py-2.5 text-xs font-semibold tracking-wide text-[#F7F3EB] whitespace-nowrap transition-colors hover:bg-[#102040]"
                   >
-                    Center on Hotel
-                  </button>
-                )}
+                    <span>{t.location.openInMaps}</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                  {selectedAttraction && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAttraction(null)}
+                      className="luxury-btn-ivory min-h-[44px] border border-[#0A1428]/25 px-4 py-2 text-xs font-medium text-[#060E1E] hover:border-[#060E1E] cursor-pointer"
+                    >
+                      {t.location.centerOnHotel}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* Right: Google Maps Platform Interactive Map */}
-            <div className="overflow-hidden border border-[#0A1428]/15 bg-[#060E1E] shadow-sm lg:col-span-7">
+            <ScrollReveal
+              variant="zoom-in"
+              duration={850}
+              delayStep={1}
+              className="overflow-hidden border border-[#0A1428]/15 bg-[#060E1E] shadow-sm lg:col-span-7"
+            >
               {apiKey ? (
                 <APIProvider
                   apiKey={apiKey}
@@ -485,23 +519,25 @@ export function AttractionsAndMap() {
                     {HOTEL_INFO.name}
                   </h3>
                   <p className="mt-2 max-w-md text-sm text-[#E6DFD1]/80">
-                    {HOTEL_INFO.fullAddress}
+                    {t.location.mapFallbackAddress}
                   </p>
                   <a
                     href={HOTEL_INFO.directionsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-6 inline-flex min-h-[44px] items-center gap-2 bg-[#D4AF37] px-5 py-2.5 text-xs font-semibold text-[#040812] hover:bg-[#E6CB7A]"
+                    className="luxury-btn-primary mt-6 inline-flex min-h-[44px] items-center gap-2 bg-[#D4AF37] px-5 py-2.5 text-xs font-semibold text-[#040812] hover:bg-[#E6CB7A]"
                   >
-                    <span>Open Directions in Google Maps</span>
+                    <span>{t.location.openDirections}</span>
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </div>
               )}
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
+
+      <LuxuryDivider variant="section" from="ivory" to="obsidian" />
     </>
   );
 }

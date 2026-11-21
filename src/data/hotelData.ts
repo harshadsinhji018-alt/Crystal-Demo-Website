@@ -51,6 +51,7 @@ export interface NearbyAttraction {
 
 export const HOTEL_INFO = {
   name: 'Hotel Crystal N',
+  logo: '/assets/aistudio/image_83a02c26.png',
   city: 'Gandhinagar',
   tagline: 'A Private Sanctuary of Midnight Luxury in Gandhinagar',
   addressLine1: '3rd Floor, Meghmalhar Complex',

@@ -118,7 +118,23 @@ export function LuxuryThreeBackdrop() {
 
     // Composite 7-part architectural crystal & champagne-gold prism sculpture
     const sculptureGroup = new THREE.Group();
-    sculptureGroup.position.set(3.4, 0.25, -1.5);
+    let baseSculptureY = 0.25;
+    const applyResponsiveSculptureLayout = (viewportW: number) => {
+      if (viewportW >= 1024) {
+        baseSculptureY = 0.25;
+        sculptureGroup.position.set(3.4, baseSculptureY, -1.5);
+        sculptureGroup.scale.setScalar(1);
+      } else if (viewportW >= 640) {
+        baseSculptureY = 0.55;
+        sculptureGroup.position.set(1.5, baseSculptureY, -1.8);
+        sculptureGroup.scale.setScalar(0.76);
+      } else {
+        baseSculptureY = 0.85;
+        sculptureGroup.position.set(0.75, baseSculptureY, -2.0);
+        sculptureGroup.scale.setScalar(0.56);
+      }
+    };
+    applyResponsiveSculptureLayout(width);
     scene.add(sculptureGroup);
 
     const goldMaterial = new THREE.MeshPhysicalMaterial({
@@ -257,6 +273,7 @@ export function LuxuryThreeBackdrop() {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      applyResponsiveSculptureLayout(w);
     };
 
     const onContextLost = (e: Event) => {
@@ -316,7 +333,8 @@ export function LuxuryThreeBackdrop() {
         innerRing.rotation.x -= delta * 0.22;
         crystalCore.rotation.y += delta * 0.25;
         crystalCage.rotation.y += delta * 0.25;
-        sculptureGroup.position.y = 0.25 + Math.sin(elapsed * 0.7) * 0.14;
+        sculptureGroup.position.y =
+          baseSculptureY + Math.sin(elapsed * 0.7) * 0.14;
 
         // Subtle particle drift
         const posAttr = particleGeo.getAttribute(
