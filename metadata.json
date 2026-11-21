@@ -1,0 +1,6 @@
+{
+  "name": "Hotel Crystal N, Gandhinagar",
+  "description": "Boutique luxury hospitality sanctuary in Sector 11, Gandhinagar, Gujarat. Explore suites, amenities, gallery, and concierge services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
